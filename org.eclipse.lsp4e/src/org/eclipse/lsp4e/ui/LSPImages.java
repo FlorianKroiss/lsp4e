@@ -330,7 +330,6 @@ public final class LSPImages {
 		case Declaration -> getImage(IMG_OVR_DECLARATION);
 		case Definition -> getImage(IMG_OVR_DEFINITION);
 		case ReadOnly -> getImage(IMG_OVR_READ_ONLY);
-		default -> null;
 		};
 	}
 
@@ -356,7 +355,6 @@ public final class LSPImages {
 		case Declaration -> getImageDescriptor(IMG_OVR_DECLARATION);
 		case Definition -> getImageDescriptor(IMG_OVR_DEFINITION);
 		case ReadOnly -> getImageDescriptor(IMG_OVR_READ_ONLY);
-		default -> null;
 		};
 	}
 
