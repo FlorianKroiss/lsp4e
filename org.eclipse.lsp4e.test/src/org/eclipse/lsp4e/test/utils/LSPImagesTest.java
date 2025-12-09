@@ -15,11 +15,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.lsp4e.ui.LSPImages;
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.SymbolTag;
 import org.eclipse.swt.graphics.Image;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.EnumSource.Mode;
 
 public class LSPImagesTest {
 	
@@ -38,6 +41,17 @@ public class LSPImagesTest {
 		Image img = LSPImages.imageOverlayFromSymbolTag(tag);
 		
 		assertNotNull(descriptor);
+		assertNotNull(img);
+	}
+	
+	@ParameterizedTest
+	@EnumSource(value=CompletionItemKind.class, mode=Mode.EXCLUDE, names= { "Color", "Event", "Operator" })
+	public void testAllImagesForCompletionItemKindAvailable(CompletionItemKind kind) {
+		CompletionItem item = new CompletionItem();
+		item.setKind(kind);
+		
+		Image img = LSPImages.imageFromCompletionItem(item);
+		
 		assertNotNull(img);
 	}
 
