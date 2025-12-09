@@ -18,28 +18,27 @@ import org.eclipse.lsp4e.ui.LSPImages;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.SymbolTag;
 import org.eclipse.swt.graphics.Image;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 public class LSPImagesTest {
 	
-	@Test
-	public void testAllImagesForSymbolKindAvailable() {
-		for (SymbolKind kind : SymbolKind.values()) {
-			Image img = LSPImages.imageFromSymbolKind(kind);
-			
-			assertNotNull(img);
-		}
+	@ParameterizedTest
+	@EnumSource(SymbolKind.class)
+	public void testAllImagesForSymbolKindAvailable(SymbolKind kind) {
+		Image img = LSPImages.imageFromSymbolKind(kind);
+		
+		assertNotNull(img);
 	}
 	
-	@Test
-	public void testAllOverlayImagesForSymbolTagAvailable() {
-		for (SymbolTag tag : SymbolTag.values()) {
-			ImageDescriptor descriptor = LSPImages.imageDescriptorOverlayFromSymbolTag(tag);
-			Image img = LSPImages.imageOverlayFromSymbolTag(tag);
-			
-			assertNotNull(descriptor);
-			assertNotNull(img);
-		}
+	@ParameterizedTest
+	@EnumSource(SymbolTag.class)
+	public void testAllOverlayImagesForSymbolTagAvailable(SymbolTag tag) {
+		ImageDescriptor descriptor = LSPImages.imageDescriptorOverlayFromSymbolTag(tag);
+		Image img = LSPImages.imageOverlayFromSymbolTag(tag);
+		
+		assertNotNull(descriptor);
+		assertNotNull(img);
 	}
 
 }
