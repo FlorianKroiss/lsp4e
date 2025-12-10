@@ -106,6 +106,7 @@ public final class LSPImages {
 	public static final String IMG_SUPERTYPE = "IMG_SUPERTYPE"; //$NON-NLS-1$
 	public static final String IMG_SUBTYPE = "IMG_SUBTYPE"; //$NON-NLS-1$
 
+	public static final String IMG_OVR_CONSTRUCTOR = "IMG_OVR_CONSTRUCTOR"; //$NON-NLS-1$
 	public static final String IMG_OVR_DEPRECATED = "IMG_OVR_DEPRECATED"; //$NON-NLS-1$
 	public static final String IMG_OVR_PRIVATE = "IMG_OVR_PRIVATE"; //$NON-NLS-1$
 	public static final String IMG_OVR_PACKAGE = "IMG_OVR_PACKAGE"; //$NON-NLS-1$
@@ -167,6 +168,7 @@ public final class LSPImages {
 		declareRegistryImage(IMG_SUBTYPE, ACTION + "sub_co.png"); //$NON-NLS-1$
 		declareRegistryImage(IMG_TERMINATE_CO, OBJECT + "terminate_co.png"); //$NON-NLS-1$
 
+		declareRegistryImage(IMG_OVR_CONSTRUCTOR, OVERLAY + "constr_ovr.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_DEPRECATED, OVERLAY + "deprecated.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_PRIVATE, OVERLAY + "private_co.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_PACKAGE, OVERLAY + "package_co.svg"); //$NON-NLS-1$
