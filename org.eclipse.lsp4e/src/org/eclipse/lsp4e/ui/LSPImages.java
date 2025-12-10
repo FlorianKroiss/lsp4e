@@ -174,10 +174,10 @@ public final class LSPImages {
 		declareRegistryImage(IMG_OVR_PACKAGE, OVERLAY + "package_co.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_PROTECTED, OVERLAY + "protected_co.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_PUBLIC, OVERLAY + "public_co.svg"); //$NON-NLS-1$
-		declareRegistryImage(IMG_OVR_INTERNAL, OVERLAY + "internal_co.png"); //$NON-NLS-1$
-		declareRegistryImage(IMG_OVR_FILE_VIS, OVERLAY + "file_visable_co.png"); //$NON-NLS-1$
+		declareRegistryImage(IMG_OVR_INTERNAL, OVERLAY + "internal_co.svg"); //$NON-NLS-1$
+		declareRegistryImage(IMG_OVR_FILE_VIS, OVERLAY + "file_visable_co.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_ABSTRACT, OVERLAY + "abstract_co.svg"); //$NON-NLS-1$
-		declareRegistryImage(IMG_OVR_VIRTUAL, OVERLAY + "virtual_co.png"); //$NON-NLS-1$
+		declareRegistryImage(IMG_OVR_VIRTUAL, OVERLAY + "virtual_co.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_FINAL, OVERLAY + "final_co.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_SEALED, OVERLAY + "sealed_co.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_STATIC, OVERLAY + "static_co.svg"); //$NON-NLS-1$
@@ -185,9 +185,9 @@ public final class LSPImages {
 		declareRegistryImage(IMG_OVR_TRANSIENT, OVERLAY + "transient_co.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_VOLATILE, OVERLAY + "volatile_co.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_NULLABLE, OVERLAY + "nullable_co.svg"); //$NON-NLS-1$
-		declareRegistryImage(IMG_OVR_NON_NULL, OVERLAY + "non_null_co.png"); //$NON-NLS-1$
-		declareRegistryImage(IMG_OVR_DECLARATION, OVERLAY + "declaration_co.png"); //$NON-NLS-1$
-		declareRegistryImage(IMG_OVR_DEFINITION, OVERLAY + "definition_co.png"); //$NON-NLS-1$
+		declareRegistryImage(IMG_OVR_NON_NULL, OVERLAY + "non_null_co.svg"); //$NON-NLS-1$
+		declareRegistryImage(IMG_OVR_DECLARATION, OVERLAY + "declaration_co.svg"); //$NON-NLS-1$
+		declareRegistryImage(IMG_OVR_DEFINITION, OVERLAY + "definition_co.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_READ_ONLY, OVERLAY + "read_only_co.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_IMPLEMENT, OVERLAY + "implement_co.svg"); //$NON-NLS-1$
 		declareRegistryImage(IMG_OVR_OVERRIDE, OVERLAY + "override_co.svg"); //$NON-NLS-1$
