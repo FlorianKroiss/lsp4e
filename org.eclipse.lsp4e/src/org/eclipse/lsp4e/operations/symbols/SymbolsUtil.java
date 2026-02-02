@@ -89,7 +89,7 @@ public class SymbolsUtil {
 
 	public static boolean isDeprecated(SymbolInformation symbolInformation) {
 		boolean deprecated = isDeprecated(getSymbolTags(symbolInformation));
-		return deprecated || (symbolInformation.getDeprecated() == null ? false: symbolInformation.getDeprecated());
+		return deprecated || Boolean.TRUE.equals(symbolInformation.getDeprecated());
 	}
 
 	public static boolean isDeprecated(WorkspaceSymbol workspaceSymbol) {
@@ -98,7 +98,7 @@ public class SymbolsUtil {
 
 	public static boolean isDeprecated(DocumentSymbol documentSymbol) {
 		boolean deprecated = isDeprecated(getSymbolTags(documentSymbol));
-		return deprecated || (documentSymbol.getDeprecated() == null ? false: documentSymbol.getDeprecated());
+		return deprecated || Boolean.TRUE.equals(documentSymbol.getDeprecated());
 	}
 
 	public static boolean isDeprecated(DocumentSymbolWithURI documentSymbolWithUri) {

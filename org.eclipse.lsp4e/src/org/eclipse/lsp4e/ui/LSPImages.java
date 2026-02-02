@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -395,72 +396,46 @@ public final class LSPImages {
 		});
 	}
 
-	private static final List<SymbolTag> VISIBILITY_PRECEDENCE = Arrays.asList(new SymbolTag[] {
+	private static final List<SymbolTag> VISIBILITY_PRECEDENCE = List.of(
 			SymbolTag.Public, SymbolTag.Protected, SymbolTag.Package, SymbolTag.Private,
-			SymbolTag.Internal, SymbolTag.File });
+			SymbolTag.Internal, SymbolTag.File);
 
 	// precedence for remaining symbol tags (without visibility tags and deprecation tag)
-	private static final List<SymbolTag> ADDITIONAL_TAGS_PRECEDENCE = Arrays.asList(new SymbolTag[] {
+	private static final List<SymbolTag> ADDITIONAL_TAGS_PRECEDENCE = List.of(
 			SymbolTag.Static, SymbolTag.Abstract, SymbolTag.Virtual, SymbolTag.Final, SymbolTag.Sealed,
 			SymbolTag.Synchronized, SymbolTag.Transient, SymbolTag.Volatile,
 			SymbolTag.Nullable, SymbolTag.NonNull, SymbolTag.ReadOnly,
-			SymbolTag.Declaration, SymbolTag.Definition });
+			SymbolTag.Declaration, SymbolTag.Definition);
 
-	private static class VisibilitySymbolTagComparator implements Comparator<SymbolTag> {
-		@Override
-		public int compare(SymbolTag tag1, SymbolTag tag2) {
-			return VISIBILITY_PRECEDENCE.indexOf(tag1) - VISIBILITY_PRECEDENCE.indexOf(tag2);
-		}
-	}
-
-	private static class AdditionalSymbolTagComparator implements Comparator<SymbolTag> {
-		@Override
-		public int compare(SymbolTag tag1, SymbolTag tag2) {
-			return ADDITIONAL_TAGS_PRECEDENCE.indexOf(tag1) - ADDITIONAL_TAGS_PRECEDENCE.indexOf(tag2);
-		}
-	}
-
-	private static List<SymbolTag> getVisibilitySymbolTagsSorted(List<SymbolTag> symbolTags) {
+	private static Optional<SymbolTag> getHighestPrecedenceVisibilitySymbolTag(List<SymbolTag> symbolTags) {
 		return symbolTags.stream()
 				.filter(tag -> VISIBILITY_PRECEDENCE.contains(tag))
-				.sorted(new VisibilitySymbolTagComparator())
-				.collect(Collectors.toList());
+				.min(Comparator.comparing(VISIBILITY_PRECEDENCE::indexOf));
 	}
 
 	private static List<SymbolTag> getAdditionalSymbolTagsSorted(List<SymbolTag> symbolTags) {
 		return symbolTags.stream()
 				.filter(tag -> ADDITIONAL_TAGS_PRECEDENCE.contains(tag))
-				.sorted(new AdditionalSymbolTagComparator())
+				.sorted(Comparator.comparing(ADDITIONAL_TAGS_PRECEDENCE::indexOf))
 				.collect(Collectors.toList());
 	}
 
 	private static @Nullable ImageDescriptor getOverlayForVisibility(List<SymbolTag> symbolTags) {
-		List<SymbolTag> visibilityTags = getVisibilitySymbolTagsSorted(symbolTags);
+		Optional<SymbolTag> visibilityTag = getHighestPrecedenceVisibilitySymbolTag(symbolTags);
 
-		if (visibilityTags.isEmpty()) {
+		if (visibilityTag.isEmpty()) {
 			return null;
 		}
 
-		SymbolTag highestPrioVisibilityTag = visibilityTags.get(0);
-		return LSPImages.imageDescriptorOverlayFromSymbolTag(highestPrioVisibilityTag);
+		return LSPImages.imageDescriptorOverlayFromSymbolTag(visibilityTag.get());
 	}
 
 	private static @Nullable ImageDescriptor getOverlayForMarkerSeverity(int severity) {
-		if (severity != IMarker.SEVERITY_WARNING && severity != IMarker.SEVERITY_ERROR) {
-			return null;
-		}
-
-		String overlayId = null;
-		if (severity == IMarker.SEVERITY_ERROR) {
-			overlayId = ISharedImages.IMG_DEC_FIELD_ERROR;
-		} else if (severity == IMarker.SEVERITY_WARNING) {
-			overlayId = ISharedImages.IMG_DEC_FIELD_WARNING;
-		}
-
-		if (overlayId != null) {
-			return LSPImages.getSharedImageDescriptor(overlayId);
-		}
-		return null;
+		return switch(severity) {
+			case IMarker.SEVERITY_ERROR   -> LSPImages.getSharedImageDescriptor(ISharedImages.IMG_DEC_FIELD_ERROR);
+			case IMarker.SEVERITY_WARNING -> LSPImages.getSharedImageDescriptor(ISharedImages.IMG_DEC_FIELD_WARNING);
+			default -> null;
+		};
 	}
 
 	private static @Nullable ImageDescriptor getUnderlayForDeprecation(boolean deprecated) {
