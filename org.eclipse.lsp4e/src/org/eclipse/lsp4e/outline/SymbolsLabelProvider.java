@@ -8,6 +8,7 @@
  *
  * Contributors:
  *  Mickael Istria (Red Hat Inc.) - initial implementation
+ *  Dietrich Travkin (SOLUNAR GmbH) - Add overlay icons for new symbol tags
  *******************************************************************************/
 package org.eclipse.lsp4e.outline;
 
@@ -97,7 +98,7 @@ public class SymbolsLabelProvider extends LabelProvider
 				.getBoolean(CNFOutlinePage.SHOW_KIND_PREFERENCE, false));
 	}
 
-	public SymbolsLabelProvider(boolean showLocation, boolean showKind) {
+	public SymbolsLabelProvider(final boolean showLocation, final boolean showKind) {
 		this.showLocation = showLocation;
 		this.showKind = showKind;
 		InstanceScope.INSTANCE.getNode(LanguageServerPlugin.PLUGIN_ID).addPreferenceChangeListener(this);
@@ -112,7 +113,7 @@ public class SymbolsLabelProvider extends LabelProvider
 	}
 
 	@Override
-	public @Nullable Image getImage(@Nullable Object element) {
+	public @Nullable Image getImage(final @Nullable Object element) {
 		// If needed, we could use more overlays like in org.eclipse.jdt.ui.JavaElementImageDescriptor,
 		// but this would demand more space in various views.
 		// See guidelines, Section "Icon Overlays": https://www.eclipse.org/articles/Article-UI-Guidelines/Contents.html
@@ -126,38 +127,40 @@ public class SymbolsLabelProvider extends LabelProvider
 		if (element instanceof Throwable) {
 			return LSPImages.getSharedImage(ISharedImages.IMG_OBJS_ERROR_TSK);
 		}
+
+		var actualElement = element;
 		if (element instanceof Either<?, ?> either) {
-			element = either.get();
+			actualElement = either.get();
 		}
 		SymbolKind symbolKind = null;
 		List<SymbolTag> symbolTags = Collections.emptyList();
 		boolean deprecated = false;
-		if (element instanceof SymbolInformation info) {
+		if (actualElement instanceof SymbolInformation info) {
 			symbolKind = SymbolsUtil.getKind(info);
 			symbolTags = SymbolsUtil.getSymbolTags(info);
 			deprecated = SymbolsUtil.isDeprecated(info);
-		} else if (element instanceof WorkspaceSymbol symbol) {
+		} else if (actualElement instanceof WorkspaceSymbol symbol) {
 			symbolKind = SymbolsUtil.getKind(symbol);
 			symbolTags = SymbolsUtil.getSymbolTags(symbol);
 			deprecated = SymbolsUtil.isDeprecated(symbol);
-		} else if (element instanceof DocumentSymbol symbol) {
+		} else if (actualElement instanceof DocumentSymbol symbol) {
 			symbolKind = SymbolsUtil.getKind(symbol);
 			symbolTags = SymbolsUtil.getSymbolTags(symbol);
 			deprecated = SymbolsUtil.isDeprecated(symbol);
-		} else if (element instanceof DocumentSymbolWithURI symbolWithURI) {
+		} else if (actualElement instanceof DocumentSymbolWithURI symbolWithURI) {
 			symbolKind = SymbolsUtil.getKind(symbolWithURI);
 			symbolTags = SymbolsUtil.getSymbolTags(symbolWithURI);
 			deprecated = SymbolsUtil.isDeprecated(symbolWithURI);
 		}
 
-		if (element != null && symbolKind != null) {
-			return LSPImages.getImageFor(symbolKind, symbolTags, deprecated, getMaxSeverity(element));
+		if (actualElement != null && symbolKind != null) {
+			return LSPImages.getImageFor(symbolKind, symbolTags, deprecated, getMaxSeverity(actualElement));
 		}
 
 		return null;
 	}
 
-	private int getMaxSeverity(Object element) {
+	private int getMaxSeverity(final Object element) {
 		IResource file = null;
 		if (element instanceof SymbolInformation info) {
 			file = resourceCache.computeIfAbsent(info.getLocation().getUri(), uri -> findResourceFor((String) uri));
@@ -200,7 +203,7 @@ public class SymbolsLabelProvider extends LabelProvider
 		return -1;
 	}
 
-	protected int getMaxSeverity(IResource resource, IDocument doc, Range range)
+	protected int getMaxSeverity(final IResource resource, final IDocument doc, final Range range)
 			throws CoreException, BadLocationException {
 		if (!severities.containsKey(resource)) {
 			refreshMarkersByLine(resource);
@@ -223,7 +226,7 @@ public class SymbolsLabelProvider extends LabelProvider
 				.orElse(-1);
 	}
 
-	private void refreshMarkersByLine(IResource resource) throws CoreException {
+	private void refreshMarkersByLine(final IResource resource) throws CoreException {
 		RangeMap<Integer, Integer> rangeMap = TreeRangeMap.create();
 		Arrays.stream(resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO))
 			.filter(marker -> marker.getAttribute(IMarker.SEVERITY, -1) > IMarker.SEVERITY_INFO)
@@ -245,12 +248,12 @@ public class SymbolsLabelProvider extends LabelProvider
 	}
 
 	@Override
-	public String getText(Object element) {
+	public String getText(final Object element) {
 		return getStyledText(element).getString();
 	}
 
 	@Override
-	public StyledString getStyledText(@Nullable Object element) {
+	public StyledString getStyledText(final @Nullable Object element) {
 
 		if (element instanceof PendingUpdateAdapter) {
 			return new StyledString(Messages.outline_computingSymbols);
@@ -266,15 +269,17 @@ public class SymbolsLabelProvider extends LabelProvider
 		if (element == null){
 			return res;
 		}
+
+		var actualElement = element;
 		if (element instanceof Either<?, ?> either) {
-			element = either.get();
+			actualElement = either.get();
 		}
 		String name = null;
 		SymbolKind kind = null;
 		String detail = null;
 		URI location = null;
 		boolean deprecated = false;
-		if (element instanceof SymbolInformation symbolInformation) {
+		if (actualElement instanceof SymbolInformation symbolInformation) {
 			name = symbolInformation.getName();
 			kind = symbolInformation.getKind();
 			deprecated = SymbolsUtil.isDeprecated(symbolInformation);
@@ -283,7 +288,7 @@ public class SymbolsLabelProvider extends LabelProvider
 			} catch (IllegalArgumentException e) {
 				LanguageServerPlugin.logError("Invalid URI: " + symbolInformation.getLocation().getUri(), e); //$NON-NLS-1$
 			}
-		} else if (element instanceof WorkspaceSymbol workspaceSymbol) {
+		} else if (actualElement instanceof WorkspaceSymbol workspaceSymbol) {
 			name = workspaceSymbol.getName();
 			kind = workspaceSymbol.getKind();
 			String rawUri = getUri(workspaceSymbol);
@@ -293,12 +298,12 @@ public class SymbolsLabelProvider extends LabelProvider
 			} catch (IllegalArgumentException e) {
 				LanguageServerPlugin.logError("Invalid URI: " + rawUri, e); //$NON-NLS-1$
 			}
-		} else if (element instanceof DocumentSymbol documentSymbol) {
+		} else if (actualElement instanceof DocumentSymbol documentSymbol) {
 			name = documentSymbol.getName();
 			kind = documentSymbol.getKind();
 			detail = documentSymbol.getDetail();
 			deprecated = SymbolsUtil.isDeprecated(documentSymbol);
-		} else if (element instanceof DocumentSymbolWithURI symbolWithURI) {
+		} else if (actualElement instanceof DocumentSymbolWithURI symbolWithURI) {
 			name = symbolWithURI.symbol.getName();
 			kind = symbolWithURI.symbol.getKind();
 			detail = symbolWithURI.symbol.getDetail();
@@ -348,7 +353,7 @@ public class SymbolsLabelProvider extends LabelProvider
 	}
 
 	@Override
-	public void preferenceChange(PreferenceChangeEvent event) {
+	public void preferenceChange(final PreferenceChangeEvent event) {
 		if (event.getKey().equals(CNFOutlinePage.SHOW_KIND_PREFERENCE)) {
 			this.showKind = Boolean.parseBoolean(String.valueOf(event.getNewValue()));
 			for (Object listener : this.getListeners()) {
@@ -359,7 +364,7 @@ public class SymbolsLabelProvider extends LabelProvider
 		}
 	}
 
-	private static String getUri(WorkspaceSymbol symbol) {
+	private static String getUri(final WorkspaceSymbol symbol) {
 		return symbol.getLocation().map(Location::getUri, WorkspaceSymbolLocation::getUri);
 	}
 
