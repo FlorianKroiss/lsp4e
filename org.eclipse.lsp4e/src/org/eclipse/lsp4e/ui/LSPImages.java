@@ -512,32 +512,34 @@ public final class LSPImages {
 			symbolTags = Collections.emptyList();
 		}
 
-		// TODO place the visibility overlay icon on the lower right corner, similar to JDT
 		ImageDescriptor severityImageDescriptor = getOverlayForMarkerSeverity(severity);
 		ImageDescriptor visibilityImageDescriptor = getOverlayForVisibility(symbolTags);
 		ImageDescriptor deprecatedImageDescriptor = getUnderlayForDeprecation(deprecated || SymbolsUtil.isDeprecated(symbolTags));
 
 		List<SymbolTag> additionalTags = getAdditionalSymbolTagsSorted(symbolTags);
+
+		// We place the visibility overlay icon on the lower right corner, similar to JDT.
+		// The top left and top right corners remain for additional symbol tags (besides visibility, severity, deprecation)
+		ImageDescriptor topLeftOverlayDescriptor = null;
 		ImageDescriptor topRightOverlayDescriptor = null;
-		ImageDescriptor bottomRightOverlayDescriptor = null;
+		ImageDescriptor bottomLeftOverlayDescriptor = severityImageDescriptor;
+		ImageDescriptor bottomRightOverlayDescriptor = visibilityImageDescriptor;
 
 		if (!additionalTags.isEmpty()) {
-			topRightOverlayDescriptor = LSPImages.imageDescriptorOverlayFromSymbolTag(additionalTags.get(0));
+			topLeftOverlayDescriptor = LSPImages.imageDescriptorOverlayFromSymbolTag(additionalTags.get(0));
 
-			if (SymbolKind.Constructor.equals(symbolKind)) {
-				// constructor base image has a built-in overlay in the top right corner, use bottom right instead
-				bottomRightOverlayDescriptor = topRightOverlayDescriptor;
-				topRightOverlayDescriptor = null;
-			} else if (additionalTags.size() > 1) {
-				bottomRightOverlayDescriptor = LSPImages.imageDescriptorOverlayFromSymbolTag(additionalTags.get(1));
+			if (additionalTags.size() > 1 && !SymbolKind.Constructor.equals(symbolKind)) {
+				// constructor base image has a built-in overlay in the top right corner,
+				// in this case we omit the second symbol tag's overlay icon
+				topRightOverlayDescriptor = LSPImages.imageDescriptorOverlayFromSymbolTag(additionalTags.get(1));
 			}
 		}
 
 		// array index: 0 = top left, 1 = top right, 2 = bottom left, 3 = bottom right, 4 = underlay
 		// see IDecoration.TOP_LEFT ... IDecoration.BOTTOM_RIGHT, IDecoration.UNDERLAY
 		ImageDescriptor @Nullable[] overlays = {
-				visibilityImageDescriptor, topRightOverlayDescriptor,
-				severityImageDescriptor, bottomRightOverlayDescriptor,
+				topLeftOverlayDescriptor, topRightOverlayDescriptor,
+				bottomLeftOverlayDescriptor, bottomRightOverlayDescriptor,
 				deprecatedImageDescriptor};
 
 		return getImageWithOverlays(symbolKind, overlays);
