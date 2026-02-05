@@ -404,13 +404,14 @@ public final class LSPImages {
 			SymbolTag.Public, SymbolTag.Protected, SymbolTag.Package, SymbolTag.Private,
 			SymbolTag.Internal, SymbolTag.File);
 
-	// precedence for remaining symbol tags (without visibility tags and deprecation tag)
+	// Precedence for remaining symbol tags (without visibility tags and deprecation tag)
+	// In order to keep the number of overlay icons rather small in the UI, we do not show the following symbol tags:
+	// SymbolTag.Nullable, SymbolTag.NonNull, SymbolTag.Declaration, SymbolTag.Definition
 	private static final List<SymbolTag> ADDITIONAL_TAGS_PRECEDENCE = List.of(
-			SymbolTag.Static, SymbolTag.Abstract, SymbolTag.Virtual, SymbolTag.Final, SymbolTag.Sealed,
-			SymbolTag.Overrides, SymbolTag.Implements,
+			SymbolTag.Static, SymbolTag.Final, SymbolTag.Abstract,
+			SymbolTag.Overrides, SymbolTag.Implements, SymbolTag.Virtual, SymbolTag.Sealed,
 			SymbolTag.Synchronized, SymbolTag.Transient, SymbolTag.Volatile,
-			SymbolTag.Nullable, SymbolTag.NonNull, SymbolTag.ReadOnly,
-			SymbolTag.Declaration, SymbolTag.Definition);
+			SymbolTag.ReadOnly);
 
 	private static Optional<SymbolTag> getHighestPrecedenceVisibilitySymbolTag(List<SymbolTag> symbolTags) {
 		return symbolTags.stream()
