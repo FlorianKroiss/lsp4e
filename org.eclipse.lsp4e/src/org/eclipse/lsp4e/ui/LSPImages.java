@@ -414,6 +414,7 @@ public final class LSPImages {
 			SymbolTag.ReadOnly);
 
 	private static Optional<SymbolTag> getHighestPrecedenceVisibilitySymbolTag(List<SymbolTag> symbolTags) {
+		// TODO Log a warning if we find more than one visibility tag?
 		return symbolTags.stream()
 				.filter(tag -> VISIBILITY_PRECEDENCE.contains(tag))
 				.min(Comparator.comparing(VISIBILITY_PRECEDENCE::indexOf));
@@ -522,6 +523,8 @@ public final class LSPImages {
 		ImageDescriptor topRightOverlayDescriptor = null;
 		ImageDescriptor bottomLeftOverlayDescriptor = severityImageDescriptor;
 		ImageDescriptor bottomRightOverlayDescriptor = visibilityImageDescriptor;
+
+		// TODO Use visibility-representing document symbol icons for fields and methods (similar to JDT) so that we can visualize one more symbol tag
 
 		if (!additionalTags.isEmpty()) {
 			topLeftOverlayDescriptor = LSPImages.imageDescriptorOverlayFromSymbolTag(additionalTags.get(0));
