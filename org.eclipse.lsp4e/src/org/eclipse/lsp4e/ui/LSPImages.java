@@ -333,6 +333,8 @@ public final class LSPImages {
 		case Declaration -> getImage(IMG_OVR_DECLARATION);
 		case Definition -> getImage(IMG_OVR_DEFINITION);
 		case ReadOnly -> getImage(IMG_OVR_READ_ONLY);
+		case Overrides -> getImage(IMG_OVR_OVERRIDE);
+		case Implements -> getImage(IMG_OVR_IMPLEMENT);
 		};
 	}
 
@@ -358,6 +360,8 @@ public final class LSPImages {
 		case Declaration -> getImageDescriptor(IMG_OVR_DECLARATION);
 		case Definition -> getImageDescriptor(IMG_OVR_DEFINITION);
 		case ReadOnly -> getImageDescriptor(IMG_OVR_READ_ONLY);
+		case Overrides -> getImageDescriptor(IMG_OVR_OVERRIDE);
+		case Implements -> getImageDescriptor(IMG_OVR_IMPLEMENT);
 		};
 	}
 
@@ -403,6 +407,7 @@ public final class LSPImages {
 	// precedence for remaining symbol tags (without visibility tags and deprecation tag)
 	private static final List<SymbolTag> ADDITIONAL_TAGS_PRECEDENCE = List.of(
 			SymbolTag.Static, SymbolTag.Abstract, SymbolTag.Virtual, SymbolTag.Final, SymbolTag.Sealed,
+			SymbolTag.Overrides, SymbolTag.Implements,
 			SymbolTag.Synchronized, SymbolTag.Transient, SymbolTag.Volatile,
 			SymbolTag.Nullable, SymbolTag.NonNull, SymbolTag.ReadOnly,
 			SymbolTag.Declaration, SymbolTag.Definition);
@@ -506,6 +511,7 @@ public final class LSPImages {
 			symbolTags = Collections.emptyList();
 		}
 
+		// TODO place the visibility overlay icon on the lower right corner, similar to JDT
 		ImageDescriptor severityImageDescriptor = getOverlayForMarkerSeverity(severity);
 		ImageDescriptor visibilityImageDescriptor = getOverlayForVisibility(symbolTags);
 		ImageDescriptor deprecatedImageDescriptor = getUnderlayForDeprecation(deprecated || SymbolsUtil.isDeprecated(symbolTags));
