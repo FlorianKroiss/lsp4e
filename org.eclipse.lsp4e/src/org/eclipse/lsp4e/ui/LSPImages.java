@@ -451,18 +451,16 @@ public final class LSPImages {
 		return LSPImages.imageDescriptorOverlayFromSymbolTag(SymbolTag.Deprecated);
 	}
 
-	private static @Nullable Image getImageWithOverlays(SymbolKind symbolKind, ImageDescriptor @Nullable[] overlays) {
+	private static @Nullable Image getImageWithOverlays(SymbolKind symbolKind, @Nullable ImageDescriptor[] overlays) {
 		Image baseImage = LSPImages.imageFromSymbolKind(symbolKind);
 
 		if (baseImage == null) {
 			return null;
 		}
 
-		@SuppressWarnings("null")
 		long numOverlays = Arrays.stream(overlays)
-				// Despite the IDE's warning, this null check were not necessary, this check is needed,
-				// since the array entries could be null.
-				.filter(e -> e != null).count();
+				.filter(Objects::nonNull)
+				.count();
 		if (numOverlays == 0) {
 			return baseImage;
 		}
@@ -537,7 +535,7 @@ public final class LSPImages {
 
 		// array index: 0 = top left, 1 = top right, 2 = bottom left, 3 = bottom right, 4 = underlay
 		// see IDecoration.TOP_LEFT ... IDecoration.BOTTOM_RIGHT, IDecoration.UNDERLAY
-		ImageDescriptor @Nullable[] overlays = {
+		@Nullable ImageDescriptor[] overlays = {
 				topLeftOverlayDescriptor, topRightOverlayDescriptor,
 				bottomLeftOverlayDescriptor, bottomRightOverlayDescriptor,
 				deprecatedImageDescriptor};
