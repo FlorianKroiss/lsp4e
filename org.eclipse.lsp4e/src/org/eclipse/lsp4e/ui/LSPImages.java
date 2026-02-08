@@ -13,14 +13,12 @@
 package org.eclipse.lsp4e.ui;
 
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,15 +54,13 @@ public final class LSPImages {
 
 	private static final Map<java.awt.Color, Image> colorToImageCache = new HashMap<>();
 
+	private record SymbolData(SymbolKind kind, int severity, boolean deprecated,
+			                  @Nullable SymbolTag visibility, @Nullable SymbolTag first, @Nullable SymbolTag second) {}
+
 	/**
 	 * Cache for symbol images with various overlays and / or an underlay.
-	 *
-	 * First key: the element's kind (e.g. class or method);
-	 * Second key: hash value calculated for a set of overlay image descriptors,
-	 *             see {@link #getImageWithOverlays(SymbolKind, ImageDescriptor[])};
-	 * Value: the base image with overlays and an optional underlay combined in one image.
 	 */
-	private static final Map<SymbolKind, Map<Integer, Image>> overlayImagesCache = new HashMap<>();
+	private static final Map<SymbolData, Image> overlayImagesCache = new HashMap<>();
 
 	private static final String ICONS_PATH = "$nl$/icons/full/"; //$NON-NLS-1$
 	private static final String OBJECT = ICONS_PATH + "obj16/"; // basic colors - size 16x16 //$NON-NLS-1$
@@ -413,11 +409,12 @@ public final class LSPImages {
 			SymbolTag.Synchronized, SymbolTag.Transient, SymbolTag.Volatile,
 			SymbolTag.ReadOnly);
 
-	private static Optional<SymbolTag> getHighestPrecedenceVisibilitySymbolTag(List<SymbolTag> symbolTags) {
+	private static @Nullable SymbolTag getHighestPrecedenceVisibilitySymbolTag(List<SymbolTag> symbolTags) {
 		// TODO Log a warning if we find more than one visibility tag?
 		return symbolTags.stream()
 				.filter(tag -> VISIBILITY_PRECEDENCE.contains(tag))
-				.min(Comparator.comparing(VISIBILITY_PRECEDENCE::indexOf));
+				.min(Comparator.comparing(VISIBILITY_PRECEDENCE::indexOf))
+				.orElse(null);
 	}
 
 	private static List<SymbolTag> getAdditionalSymbolTagsSorted(List<SymbolTag> symbolTags) {
@@ -425,16 +422,6 @@ public final class LSPImages {
 				.filter(tag -> ADDITIONAL_TAGS_PRECEDENCE.contains(tag))
 				.sorted(Comparator.comparing(ADDITIONAL_TAGS_PRECEDENCE::indexOf))
 				.collect(Collectors.toList());
-	}
-
-	private static @Nullable ImageDescriptor getOverlayForVisibility(List<SymbolTag> symbolTags) {
-		Optional<SymbolTag> visibilityTag = getHighestPrecedenceVisibilitySymbolTag(symbolTags);
-
-		if (visibilityTag.isEmpty()) {
-			return null;
-		}
-
-		return LSPImages.imageDescriptorOverlayFromSymbolTag(visibilityTag.get());
 	}
 
 	private static @Nullable ImageDescriptor getOverlayForMarkerSeverity(int severity) {
@@ -445,34 +432,32 @@ public final class LSPImages {
 		};
 	}
 
-	private static @Nullable ImageDescriptor getUnderlayForDeprecation(boolean deprecated) {
-		if (!deprecated) {
-			return null;
-		}
-		return LSPImages.imageDescriptorOverlayFromSymbolTag(SymbolTag.Deprecated);
-	}
-
-	private static @Nullable Image getImageWithOverlays(SymbolKind symbolKind, @Nullable ImageDescriptor[] overlays) {
-		Image baseImage = LSPImages.imageFromSymbolKind(symbolKind);
+	private static @Nullable Image getImageWithOverlays(SymbolData symbolData) {
+		Image baseImage = LSPImages.imageFromSymbolKind(symbolData.kind);
 
 		if (baseImage == null) {
 			return null;
 		}
 
-		long numOverlays = Arrays.stream(overlays)
-				.filter(Objects::nonNull)
-				.count();
-		if (numOverlays == 0) {
-			return baseImage;
-		}
+		final ImageDescriptor severity = LSPImages.getOverlayForMarkerSeverity(symbolData.severity);
+		final ImageDescriptor visibility = symbolData.visibility == null ? null : LSPImages.imageDescriptorOverlayFromSymbolTag(symbolData.visibility);
+		final ImageDescriptor deprecated = symbolData.deprecated ? LSPImages.imageDescriptorOverlayFromSymbolTag(SymbolTag.Deprecated) : null;
+		final ImageDescriptor firstAdditional = symbolData.first == null ? null : LSPImages.imageDescriptorOverlayFromSymbolTag(symbolData.first);
+		final ImageDescriptor secondAdditional = symbolData.second == null ? null : LSPImages.imageDescriptorOverlayFromSymbolTag(symbolData.second);
 
-		int hashCode = Arrays.hashCode(overlays);
+		@Nullable ImageDescriptor[] overlays = {
+				// IDecoration.TOP_LEFT
+				firstAdditional,
+				// IDecoration.TOP_RIGHT
+				secondAdditional,
+				// IDecoration.BOTTOM_LEFT
+				severity,
+				// IDecoration.BOTTOM_RIGHT
+				visibility,
+				// IDecoration.UNDERLAY
+				deprecated};
 
-		Map<Integer, Image> overlayImagesForSymbolKind = overlayImagesCache.computeIfAbsent(symbolKind,
-				kind -> new HashMap<>());
-
-		return overlayImagesForSymbolKind.computeIfAbsent(hashCode,
-				hash -> new DecorationOverlayIcon(baseImage, overlays).createImage());
+		return new DecorationOverlayIcon(baseImage, overlays).createImage();
 	}
 
 	/**
@@ -502,7 +487,6 @@ public final class LSPImages {
 	 */
 	public static @Nullable Image getImageFor(@Nullable SymbolKind symbolKind, @Nullable List<SymbolTag> symbolTags,
 			boolean deprecated, int severity) {
-
 		if (symbolKind == null) {
 			return EMPTY_IMAGE;
 		}
@@ -511,50 +495,37 @@ public final class LSPImages {
 			symbolTags = Collections.emptyList();
 		}
 
-		ImageDescriptor severityImageDescriptor = getOverlayForMarkerSeverity(severity);
-		ImageDescriptor visibilityImageDescriptor = getOverlayForVisibility(symbolTags);
-		ImageDescriptor deprecatedImageDescriptor = getUnderlayForDeprecation(deprecated || SymbolsUtil.isDeprecated(symbolTags));
+		SymbolTag visibility = getHighestPrecedenceVisibilitySymbolTag(symbolTags);
 
 		List<SymbolTag> additionalTags = getAdditionalSymbolTagsSorted(symbolTags);
-
-		// We place the visibility overlay icon on the lower right corner, similar to JDT.
-		// The top left and top right corners remain for additional symbol tags (besides visibility, severity, deprecation)
-		ImageDescriptor topLeftOverlayDescriptor = null;
-		ImageDescriptor topRightOverlayDescriptor = null;
-		ImageDescriptor bottomLeftOverlayDescriptor = severityImageDescriptor;
-		ImageDescriptor bottomRightOverlayDescriptor = visibilityImageDescriptor;
+		@Nullable SymbolTag firstAdditional = null;
+		@Nullable SymbolTag secondAdditional = null;
 
 		// TODO Use visibility-representing document symbol icons for fields and methods (similar to JDT) so that we can visualize one more symbol tag
-
 		if (!additionalTags.isEmpty()) {
-			topLeftOverlayDescriptor = LSPImages.imageDescriptorOverlayFromSymbolTag(additionalTags.get(0));
+			firstAdditional = additionalTags.get(0);
 
 			if (additionalTags.size() > 1 && !SymbolKind.Constructor.equals(symbolKind)) {
 				// constructor base image has a built-in overlay in the top right corner,
 				// in this case we omit the second symbol tag's overlay icon
-				topRightOverlayDescriptor = LSPImages.imageDescriptorOverlayFromSymbolTag(additionalTags.get(1));
+				secondAdditional = additionalTags.get(1);
 			}
 		}
 
-		// array index: 0 = top left, 1 = top right, 2 = bottom left, 3 = bottom right, 4 = underlay
-		// see IDecoration.TOP_LEFT ... IDecoration.BOTTOM_RIGHT, IDecoration.UNDERLAY
-		@Nullable ImageDescriptor[] overlays = {
-				topLeftOverlayDescriptor, topRightOverlayDescriptor,
-				bottomLeftOverlayDescriptor, bottomRightOverlayDescriptor,
-				deprecatedImageDescriptor};
+		SymbolData symbolData = new SymbolData(symbolKind, severity, deprecated || SymbolsUtil.isDeprecated(symbolTags),
+				visibility, firstAdditional, secondAdditional);
 
-		return getImageWithOverlays(symbolKind, overlays);
+		return overlayImagesCache.computeIfAbsent(symbolData, data -> LSPImages.getImageWithOverlays(data));
 	}
 
 	public static final void dispose() {
 		Stream.concat(
 				colorToImageCache.values().stream(),
 				overlayImagesCache.values().stream()
-					.flatMap(map -> map.values().stream()))
+			)
 			.filter(Objects::nonNull)
 			.forEach(Image::dispose);
-		overlayImagesCache.values().stream()
-			.forEach(Map::clear);
+		overlayImagesCache.clear();
 		overlayImagesCache.clear();
 		colorToImageCache.clear();
 	}
