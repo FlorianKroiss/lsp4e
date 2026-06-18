@@ -47,6 +47,8 @@ import org.eclipse.swt.widgets.Display;
 
 public class LSPLineContentCodeMining extends LineContentCodeMining {
 
+	private static final String PADDING = " "; //$NON-NLS-1$
+
 	private InlayHint inlayHint;
 	private final LanguageServerWrapper wrapper;
 	private final IDocument document;
@@ -70,11 +72,11 @@ public class LSPLineContentCodeMining extends LineContentCodeMining {
 		} else {
 			StringBuilder sb = new StringBuilder();
 			if (Boolean.TRUE.equals(inlayHint.getPaddingLeft())) {
-				sb.append(' ');
+				sb.append(PADDING);
 			}
 			sb.append(label);
 			if (Boolean.TRUE.equals(inlayHint.getPaddingRight())) {
-				sb.append(' ');
+				sb.append(PADDING);
 			}
 			super.setLabel(sb.toString());
 		}
@@ -182,6 +184,11 @@ public class LSPLineContentCodeMining extends LineContentCodeMining {
 				font = new Font(display, fontData);
 				gc.setFont(font);
 				final var origin = new Point(0, 0);
+				if (Boolean.TRUE.equals(inlayHint.getPaddingLeft())) {
+					// Account for padding
+					Point size = gc.stringExtent(PADDING);
+					origin.x += size.x;
+				}
 				for (InlayHintLabelPart labelPart : labelParts) {
 					Point size = gc.stringExtent(labelPart.getValue());
 					final var bounds = new Rectangle(origin.x, origin.y, size.x, size.y);
